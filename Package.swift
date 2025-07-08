@@ -17,7 +17,7 @@ let package = Package(
     products: [
         // Automatic
         .library(name: "Vexil", targets: [ "Vexil" ]),
-//        .library(name: "Vexillographer", targets: [ "Vexillographer" ]),
+        .library(name: "Vexillographer", targets: [ "Vexillographer" ]),
     ],
 
     dependencies: .init {
@@ -52,12 +52,15 @@ let package = Package(
 
         // Vexillographer
 
-//        Target.target(
-//            name: "Vexillographer",
-//            dependencies: [
-//                .target(name: "Vexil"),
-//            ]
-//        ),
+        Target.target(
+            name: "Vexillographer",
+            dependencies: [
+                .target(name: "Vexil"),
+            ],
+            swiftSettings: [
+                .swiftLanguageMode(.v6),
+            ]
+        )
 
         // Macros
 

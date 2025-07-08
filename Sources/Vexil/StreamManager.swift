@@ -134,23 +134,33 @@ extension StreamManager {
     /// is deinited, which doesn't happen often.
     ///
     struct Stream {
-        var stream: AsyncStream<FlagChange>
-        var continuation: AsyncStream<FlagChange>.Continuation
+
+        let value: AsyncCurrentValue<FlagChange>
+        var stream: AsyncStream<FlagChange> {
+            let values = value.values
+            var iterator = values.makeAsyncIterator()
+            return AsyncStream {
+                await iterator.next()
+            }
+        }
+//        var continuation: AsyncStream<FlagChange>.Continuation
         let keyPathMapper: @Sendable (String) -> FlagKeyPath
 
         init(keyPathMapper: @Sendable @escaping (String) -> FlagKeyPath) {
             let (stream, continuation) = AsyncStream<FlagChange>.makeStream()
-            self.stream = stream
-            self.continuation = continuation
+            self.value = AsyncCurrentValue(FlagChange.all)
+//            self.stream = stream
+//            self.continuation = continuation
             self.keyPathMapper = keyPathMapper
         }
 
         func finish() {
-            continuation.finish()
+//            continuation.finish()
         }
 
         func send(_ change: FlagChange) {
-            continuation.yield(change)
+            value.update { $0 = change }
+//            continuation.yield(change)
         }
 
         func send(keys: Set<String>) {
@@ -162,4 +172,267 @@ extension StreamManager {
         }
     }
 
+}
+
+import Foundation
+
+public struct AsyncCurrentValue<Wrapped: Sendable>: Sendable {
+
+    struct State {
+        // iterators start with generation = 0, so our initial value
+        // has generation 1, so even that will be delivered.
+        var generation = 1
+        var wrappedValue: Wrapped {
+            didSet {
+                generation += 1
+                for (_, continuation) in pendingContinuations {
+                    continuation.resume(returning: (generation, wrappedValue))
+                }
+                pendingContinuations = []
+            }
+        }
+
+        var pendingContinuations = [(UUID, CheckedContinuation<(Int, Wrapped)?, Never>)]()
+    }
+
+    final class Allocation: Sendable {
+        let mutex: Mutex<State>
+
+        init(state: sending State) {
+            mutex = Mutex(state)
+        }
+    }
+
+    // MARK: - Properties
+
+    let allocation: Allocation
+
+    // get-only; providing set would encourage `currentValue += 1`
+    // which is a race (lock taken twice). Use
+    // `$currentValue.update { $0 += 1 }` instead.
+
+    /// Access to the current value.
+    public var value: Wrapped {
+        allocation.mutex.withLock { $0.wrappedValue }
+    }
+
+    // MARK: - Initialisation
+
+    /// Creates a `CurrentValue` with an initial value
+    public init(_ initialValue: sending Wrapped) {
+        allocation = .init(state: State(wrappedValue: initialValue))
+    }
+
+    // MARK: - Mutation
+
+    /// Updates the current state using the supplied closure.
+    ///
+    /// - Parameters:
+    ///   - body:               A closure that passes the current value as an in-out parameter that you can mutate.
+    ///                         When the closure returns the mutated value is saved as the current value and is sent to all subscribers.
+    ///
+    public func update<R: Sendable, E: Error>(_ body: (inout sending Wrapped) throws(E) -> R) throws(E) -> R {
+        // have to use a local function to get a closure with a typed throw until the
+        // FullTypedThrows feature works
+        func lockBody(state: inout sending State) throws(E) -> sending R {
+            var wrappedValue = state.wrappedValue
+            do {
+                let result = try body(&wrappedValue)
+                state.wrappedValue = wrappedValue
+                return result
+            } catch {
+                state.wrappedValue = wrappedValue
+                throw error
+            }
+        }
+        let result = try allocation.mutex.withLock(lockBody)
+        // You should be able to replace `R: Sendable` above with `-> sending R`,
+        // but the return statement below gives:
+        //
+        // Returning task-isolated 'result' risks causing data races since the
+        // caller assumes that 'result' can safely be sent to other isolation
+        // domains
+        //
+        // This is surely a compiler bug — `withLock` just returned
+        // `result` as `sending`.
+        return result
+    }
+
+    public struct Values: AsyncSequence {
+
+        public typealias Element = Wrapped
+        @available(macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, visionOS 2.0, *)
+        public typealias Failure = Never
+
+        public func makeAsyncIterator() -> AsyncIterator {
+            AsyncIterator(allocation: allocation)
+        }
+
+        weak var allocation: Allocation?
+
+    }
+
+    public var values: Values {
+        Values(allocation: allocation)
+    }
+
+}
+
+// MARK: - AsyncIterator
+
+public extension AsyncCurrentValue.Values {
+
+    struct AsyncIterator: AsyncIteratorProtocol {
+
+        weak var allocation: AsyncCurrentValue.Allocation?
+        var generation = 0
+
+        public mutating func next() async -> Element? {
+            // is `#isolation` or `nil` better here?
+            await next(isolation: #isolation)
+        }
+
+        public mutating func next(isolation actor: isolated (any Actor)?) async -> Wrapped? {
+            guard let allocation else {
+                return nil
+            }
+            let uuid = UUID()
+            let generationAndResult = await withTaskCancellationHandler {
+                await withCheckedContinuation { (continuation: CheckedContinuation<(Int, Wrapped)?, Never>) in
+                    allocation.mutex.withLock {
+                        if Task.isCancelled {
+                            // the iterating task is already cancelled, just return nil
+                            continuation.resume(returning: nil)
+                        } else if $0.generation > generation {
+                            // the `CurrentValue` already has a newer value, just return it
+                            continuation.resume(returning: ($0.generation, $0.wrappedValue))
+                        } else {
+                            // wait for the `CurrentValue` to be updated
+                            $0.pendingContinuations.append((uuid, continuation))
+                        }
+                    }
+                }
+            } onCancel: {
+                allocation.mutex.withLock {
+                    if let index = $0.pendingContinuations.firstIndex(where: { $0.0 == uuid }) {
+                        $0.pendingContinuations.remove(at: index).1.resume(returning: nil)
+                    } else {
+                        // onCancel: was called before operation:
+                        // operation: will discover that Task.isCancelled
+                    }
+                }
+            }
+            guard let generationAndResult else {
+                return nil
+            }
+            // ensure we don't return a duplicate value next time
+            generation = generationAndResult.0
+            return generationAndResult.1
+        }
+    }
+
+}
+
+// enum Backport {
+//
+// }
+import Foundation
+
+#if compiler(>=6)
+/// A synchronization primitive that protects shared mutable state via mutual exclusion.
+///
+/// A back-port of Swift's `Mutex` type for wider platform availability.
+#if hasFeature(StaticExclusiveOnly)
+@_staticExclusiveOnly
+#endif
+package struct Mutex<Value: ~Copyable>: ~Copyable {
+    private let _lock = NSLock()
+    private let _box: Box
+
+    /// Initializes a value of this mutex with the given initial state.
+    ///
+    /// - Parameter initialValue: The initial value to give to the mutex.
+    package init(_ initialValue: consuming sending Value) {
+        _box = Box(initialValue)
+    }
+
+    private final class Box {
+        var value: Value
+        init(_ initialValue: consuming sending Value) {
+            value = initialValue
+        }
+    }
+}
+
+extension Mutex: @unchecked Sendable where Value: ~Copyable { }
+
+package extension Mutex where Value: ~Copyable {
+    /// Calls the given closure after acquiring the lock and then releases ownership.
+    package borrowing func withLock<Result: ~Copyable, E: Error>(
+        _ body: (inout sending Value) throws(E) -> sending Result
+    ) throws(E) -> sending Result {
+        _lock.lock()
+        defer { _lock.unlock() }
+        return try body(&_box.value)
+    }
+
+    /// Attempts to acquire the lock and then calls the given closure if successful.
+    package borrowing func withLockIfAvailable<Result: ~Copyable, E: Error>(
+        _ body: (inout sending Value) throws(E) -> sending Result
+    ) throws(E) -> sending Result? {
+        guard _lock.try() else { return nil }
+        defer { _lock.unlock() }
+        return try body(&_box.value)
+    }
+}
+#else
+package struct Mutex<Value> {
+    private let _lock = NSLock()
+    private let _box: Box
+
+    package init(_ initialValue: consuming Value) {
+        _box = Box(initialValue)
+    }
+
+    private final class Box {
+        var value: Value
+        init(_ initialValue: consuming Value) {
+            value = initialValue
+        }
+    }
+}
+
+extension Mutex: @unchecked Sendable { }
+
+package extension Mutex {
+    package borrowing func withLock<Result>(
+        _ body: (inout Value) throws -> Result
+    ) rethrows -> Result {
+        _lock.lock()
+        defer { _lock.unlock() }
+        return try body(&_box.value)
+    }
+
+    package borrowing func withLockIfAvailable<Result>(
+        _ body: (inout Value) throws -> Result
+    ) rethrows -> Result? {
+        guard _lock.try() else { return nil }
+        defer { _lock.unlock() }
+        return try body(&_box.value)
+    }
+}
+#endif
+
+package extension Mutex where Value == Void {
+    package borrowing func _unsafeLock() {
+        _lock.lock()
+    }
+
+    package borrowing func _unsafeTryLock() -> Bool {
+        _lock.try()
+    }
+
+    package borrowing func _unsafeUnlock() {
+        _lock.unlock()
+    }
 }

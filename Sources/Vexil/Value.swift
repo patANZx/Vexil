@@ -61,6 +61,12 @@ public protocol FlagDisplayValue {
     var flagDisplayValue: String { get }
 }
 
+extension Optional: FlagDisplayValue where Wrapped: FlagDisplayValue {
+    public var flagDisplayValue: String {
+        flagDisplayValue ?? "nil"
+    }
+}
+
 // MARK: - Boxed Flag Values
 
 /// An intermediate type used to make encoding and decoding of types simpler for `FlagValueSource`s
