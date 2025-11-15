@@ -11,30 +11,14 @@
 		436D05AD2EA194D30056498A /* Vexillographer in Frameworks */ = {isa = PBXBuildFile; productRef = 436D05AC2EA194D30056498A /* Vexillographer */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXContainerItemProxy section */
-		436D05732EA193620056498A /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 436D055D2EA193610056498A /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 436D05642EA193610056498A;
-			remoteInfo = Examples;
-		};
-/* End PBXContainerItemProxy section */
-
 /* Begin PBXFileReference section */
 		436D05652EA193610056498A /* Examples.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Examples.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		436D05722EA193620056498A /* ExamplesTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ExamplesTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		436D05672EA193610056498A /* Examples */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Examples;
-			sourceTree = "<group>";
-		};
-		436D05752EA193620056498A /* ExamplesTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ExamplesTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -49,13 +33,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		436D056F2EA193620056498A /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -63,7 +40,6 @@
 			isa = PBXGroup;
 			children = (
 				436D05672EA193610056498A /* Examples */,
-				436D05752EA193620056498A /* ExamplesTests */,
 				436D05662EA193610056498A /* Products */,
 			);
 			sourceTree = "<group>";
@@ -72,7 +48,6 @@
 			isa = PBXGroup;
 			children = (
 				436D05652EA193610056498A /* Examples.app */,
-				436D05722EA193620056498A /* ExamplesTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -104,29 +79,6 @@
 			productReference = 436D05652EA193610056498A /* Examples.app */;
 			productType = "com.apple.product-type.application";
 		};
-		436D05712EA193620056498A /* ExamplesTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 436D05892EA193620056498A /* Build configuration list for PBXNativeTarget "ExamplesTests" */;
-			buildPhases = (
-				436D056E2EA193620056498A /* Sources */,
-				436D056F2EA193620056498A /* Frameworks */,
-				436D05702EA193620056498A /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				436D05742EA193620056498A /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				436D05752EA193620056498A /* ExamplesTests */,
-			);
-			name = ExamplesTests;
-			packageProductDependencies = (
-			);
-			productName = ExamplesTests;
-			productReference = 436D05722EA193620056498A /* ExamplesTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -139,10 +91,6 @@
 				TargetAttributes = {
 					436D05642EA193610056498A = {
 						CreatedOnToolsVersion = 26.0;
-					};
-					436D05712EA193620056498A = {
-						CreatedOnToolsVersion = 26.0;
-						TestTargetID = 436D05642EA193610056498A;
 					};
 				};
 			};
@@ -164,20 +112,12 @@
 			projectRoot = "";
 			targets = (
 				436D05642EA193610056498A /* Examples */,
-				436D05712EA193620056498A /* ExamplesTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		436D05632EA193610056498A /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		436D05702EA193620056498A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -194,22 +134,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		436D056E2EA193620056498A /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		436D05742EA193620056498A /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 436D05642EA193610056498A /* Examples */;
-			targetProxy = 436D05732EA193620056498A /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		436D05842EA193620056498A /* Debug */ = {
@@ -341,6 +266,9 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
+				ENABLE_APP_SANDBOX = YES;
+				ENABLE_HARDENED_RUNTIME = YES;
+				ENABLE_OUTGOING_NETWORK_CONNECTIONS = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -353,10 +281,16 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.unsignedapps.vexil.Examples;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				REGISTER_APP_GROUPS = YES;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -387,10 +321,15 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.unsignedapps.vexil.Examples;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
+				SUPPORTS_MACCATALYST = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -398,50 +337,6 @@
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		436D058A2EA193620056498A /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.unsignedapps.vexil.ExamplesTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Examples.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Examples";
-			};
-			name = Debug;
-		};
-		436D058B2EA193620056498A /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = "";
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.unsignedapps.vexil.ExamplesTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				STRING_CATALOG_GENERATE_SYMBOLS = NO;
-				SWIFT_APPROACHABLE_CONCURRENCY = YES;
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Examples.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Examples";
 			};
 			name = Release;
 		};
@@ -462,15 +357,6 @@
 			buildConfigurations = (
 				436D05872EA193620056498A /* Debug */,
 				436D05882EA193620056498A /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		436D05892EA193620056498A /* Build configuration list for PBXNativeTarget "ExamplesTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				436D058A2EA193620056498A /* Debug */,
-				436D058B2EA193620056498A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
