@@ -36,7 +36,7 @@ struct FlagItemContent<Value: FlagValue>: View {
 
     var body: some View {
         FlagControl(wigwag) { configuration in
-            HStack {
+            HStack(spacing: 0) {
                 if let styledControl = flagPoleContext.styledControl(configuration: configuration) {
                     styledControl
                 } else if configuration.isEditable {
@@ -44,6 +44,7 @@ struct FlagItemContent<Value: FlagValue>: View {
                 } else {
                     FlagValueRow(configuration.name, value: configuration.value)
                 }
+                Spacer()
                 Button {
                     isFocused = false
                     isShowingDetail = true
