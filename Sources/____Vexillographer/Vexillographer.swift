@@ -6,7 +6,7 @@ public struct Vexillographer<RootGroup: FlagContainer>: View {
     private var flagPole: FlagPole<RootGroup>
     private var editableSource: (any FlagValueSource)?
 
-    // FIXME: Should this be opt-in?
+    // FIX: Should this be opt-in?
     @State private var searchText = ""
 
     // TODO: Docs

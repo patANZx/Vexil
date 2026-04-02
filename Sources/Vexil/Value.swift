@@ -61,6 +61,11 @@ public protocol FlagDisplayValue {
     var flagDisplayValue: String { get }
 }
 
+
+extension RawRepresentable where Self: FlagDisplayValue, RawValue: CustomStringConvertible {
+    public var flagDisplayValue: String { rawValue.description }
+}
+
 // MARK: - Boxed Flag Values
 
 /// An intermediate type used to make encoding and decoding of types simpler for `FlagValueSource`s
